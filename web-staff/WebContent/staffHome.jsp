@@ -43,7 +43,7 @@
                     <a href="<c:url value='/listStaff'></c:url>">직원목록</a>
                 </li>
                 <li>
-                    <a href="#">직원검색</a>
+                    <a href="<c:url value='/searchStaff'></c:url>">직원검색</a>
                 </li>
             </ul>
         </div>

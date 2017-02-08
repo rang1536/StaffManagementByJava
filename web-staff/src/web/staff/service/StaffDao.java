@@ -35,10 +35,99 @@ public class StaffDao {
 	List<Skill> skillList;
 	List<Staff> staffList;
 	
+	// no값으로 하나의 회원 조회
+	public Staff getStaffByNo(int no){
+		try{
+			conn = this.getConnection();
+			String sql = "SELECT staff.*, religion.name, school.graduate "+
+					"FROM staff "+
+					"LEFT JOIN religion "+
+					"ON staff.religionno = religion.no "+
+					"LEFT JOIN school ON staff.schoolno = school.no "+
+					"WHERE staff.no = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, no);
+			rs = pstmt.executeQuery();
+			String sql2 = "SELECT skill.* FROM skill WHERE skill.no IN (SELECT skillno FROM staffskill WHERE staffno = ?)";
+			if(rs.next()){
+				staff = new Staff();
+				int staffNo = rs.getInt("no");
+				staff.setNo(staffNo);
+				staff.setName(rs.getString("name"));
+				staff.setReligionNo(rs.getInt("religionno"));
+				staff.setReligionName(rs.getString("religion.name"));
+				staff.setSchoolGraduate(rs.getString("school.graduate"));
+				staff.setSchoolNo(rs.getInt("schoolno"));
+				staff.setGraduateDay(rs.getString("graduateday"));
+				staff.setSn(rs.getString("sn"));
+				ArrayList<Skill> skillList = new ArrayList<Skill>();
+				pstmt2 = conn.prepareStatement(sql2);
+				pstmt2.setInt(1, staffNo);
+				rs2 = pstmt2.executeQuery();
+				while(rs2.next()){
+					skill = new Skill();
+					skill.setNo(rs2.getInt("no"));
+					skill.setName(rs2.getString("name"));
+					skillList.add(skill);
+					//System.out.println("뭐임"+staff);
+				}
+				System.out.println("스킬사이즈 : "+skillList.size());
+				staff.setSkillList(skillList);
+				//System.out.println("뭐임"+staff);
+			}
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			this.close(conn,pstmt,rs);
+			
+		}
+		return staff;
+	}
+	
+	// 스킬을 제외한 검색조건으로 조회
+	public List<Staff> searchStaff(String gdStart, String gdEnd, Staff staff){
+		try{
+			conn=this.getConnection();
+			String sql = "SELECT * "+
+					"FROM staff "+
+					"WHERE name like ? "+ 
+					"and graduateday > ? "+ 
+					"and graduateday < ? "+
+					"and schoolno = ? "+
+					"and religionno = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, '%'+staff.getName()+'%');
+			pstmt.setString(2, gdStart);
+			pstmt.setString(3, gdEnd);
+			pstmt.setInt(4, staff.getSchoolNo());
+			pstmt.setInt(5, staff.getReligionNo());
+			rs = pstmt.executeQuery();
+			staffList = new ArrayList<Staff>();
+			while(rs.next()){
+				staff = new Staff();
+				staff.setNo(rs.getInt("no"));
+				staff.setName(rs.getString("name"));
+				staff.setGraduateDay(rs.getString("graduateday"));
+				staff.setSchoolNo(rs.getInt("schoolno"));
+				staff.setReligionNo(rs.getInt("religionno"));
+				staff.setSn(rs.getString("sn"));
+				staffList.add(staff);
+			}
+			
+		}catch(Exception e){
+			e.printStackTrace();
+			
+		}finally{
+			this.close(conn,pstmt,rs );
+		}
+		return staffList;
+	}
+	
 	//전체 직원조회 
 	public ArrayList<Staff> getAllStaff(){
 		//System.out.println("h2!");
-		ArrayList<Skill> skillList;
+		ArrayList<Skill> skillList = null;
 		ArrayList<Staff> staffList = new ArrayList<Staff>();
 		try{
 			conn = this.getConnection();
@@ -49,13 +138,8 @@ public class StaffDao {
 					"LEFT JOIN school ON staff.schoolno = school.no";
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
-			String sql2 = "SELECT skill.*" 
-					+" FROM staffskill"
-					+" INNER JOIN skill"
-					+" ON staffskill.skillno = skill.no" 
-					+" INNER JOIN staff"
-					+" ON staffskill.staffno = ?";
-			//System.out.println(rs.next());
+			String sql2 = "SELECT skill.* FROM skill WHERE skill.no IN (SELECT skillno FROM staffskill WHERE staffno = ?)";
+ 			//System.out.println(rs.next());
 			while(rs.next()){
 				staff = new Staff();
 				int staffNo = rs.getInt("no");
@@ -78,6 +162,7 @@ public class StaffDao {
 					skillList.add(skill);
 					//System.out.println("뭐임"+staff);
 				}
+				//System.out.println("스킬사이즈 : "+skillList.size());
 				staff.setSkillList(skillList);
 				staffList.add(staff);
 				//System.out.println("뭐임"+staff);

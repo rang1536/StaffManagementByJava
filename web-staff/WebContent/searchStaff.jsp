@@ -54,18 +54,19 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1>STAFF 등록</h1>
+                        <h1>STAFF 조회</h1>
 					<div>
-						<form action = "<c:url value='/addStaff'/>" method="post">
+						<form action = "<c:url value='/searchStaff'/>" method="post">
 							<table border="1">
 								<tr>
 									<th>이름</th>
 									<th>
 										<input type="text" name="name" id="name" />
 									</th>
-									<th>주민번호</th>
+									<th>성별</th>
 									<th>
-										<input type="text" name="snf" />-<input type="text" name="snl" />
+										<input type="radio" name="gender" value="1"/>남
+										<input type="radio" name="gender" value="2"/>여
 									</th>
 									<th>종교</th>
 									<th>
@@ -90,28 +91,23 @@
 									<td colspan="3">
 										<c:forEach var="i" items="${skillList}">
 											<input type="checkbox" name="skillNo" value="${i.no}"/>${i.name}
-											
 										</c:forEach>
 									</td>
 								</tr>
 								<tr>
 									<td>졸업일</td>
 									<td colspan="5">
-										<input type="date" name="graduateDay" />
+										<input type="date" name="gdStart" />--<input type="date" name="gdEnd" />
 									</td>
 								</tr>
 								<tr>
-									<center>
 									<td  colspan = "6">
 										<input type="submit" value="등록" id="submit" />
 										<input type="reset" value="다시작성" />
 									</td>
-									</center>
 								</tr>
 							</table>
-						
 						</form>
-                                   
                     </div>
                 </div>
             </div>

@@ -46,7 +46,7 @@
                     <a href="<c:url value='/listStaff'></c:url>">직원목록</a>
                 </li>
                 <li>
-                    <a href="#">직원검색</a>
+                    <a href="<c:url value='/searchStaff'></c:url>">직원검색</a>
                 </li>
             </ul>
         </div>
@@ -74,7 +74,7 @@
 								  <c:forEach var="i" items="${staffList}">
 								    <tr>
 									  <td>${i.no}</td>
-									  <td>${i.name}</td>
+									  <td><a href="<c:url value='/editStaff?no=${i.no}'/>">${i.name}</a></td>
 									  <td>${i.schoolGraduate}</td>
 									  <td>${i.graduateDay}</td>
 									  <td>${i.religionName}</td>
