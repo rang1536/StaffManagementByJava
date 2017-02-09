@@ -40,7 +40,7 @@
                     <a href="<c:url value='/addStaff'></c:url>">직원등록</a>
                 </li>
                 <li>
-                    <a href="<c:url value='/listStaff'></c:url>">직원목록</a>
+                    <a href="<c:url value='/listStaff'></c:url>">직원목록(수정/삭제)</a>
                 </li>
                 <li>
                     <a href="<c:url value='/searchStaff'></c:url>">직원검색</a>

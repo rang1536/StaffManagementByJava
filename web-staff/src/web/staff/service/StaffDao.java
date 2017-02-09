@@ -35,6 +35,53 @@ public class StaffDao {
 	List<Skill> skillList;
 	List<Staff> staffList;
 	
+	//수정처리 (트랜잭션)
+	public int editStaff(Staff staff,String[] skillNo){
+		int result2 = 0;
+		try{
+			conn=this.getConnection();
+			conn.setAutoCommit(false);
+			
+			String sql = "UPDATE staff SET name=?, sn=?, graduateday=?, schoolno=?, religionno=? WHERE no = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, staff.getName());
+			pstmt.setString(2, staff.getSn());
+			pstmt.setString(3, staff.getGraduateDay());
+			pstmt.setInt(4, staff.getSchoolNo());
+			pstmt.setInt(5, staff.getReligionNo());
+			pstmt.setInt(6, staff.getNo());
+			rowCount = pstmt.executeUpdate();
+			//System.out.println("수정성공 ? "+rowCount);
+			
+			// 수정 성공시에 기존의 스킬을 지우고 입력받은 값을 다시 입력해준다.
+			if(rowCount != 0){
+				pstmt = conn.prepareStatement("DELETE FROM staffskill WHERE staffno=?");
+				pstmt.setInt(1, staff.getNo());
+				int result1 = pstmt.executeUpdate();
+				//System.out.println("삭제성공 ? "+result1);
+				if(result1 != 0){
+					for(int i=0 ; i < skillNo.length ; i++){
+						pstmt = conn.prepareStatement("INSERT INTO staffSkill(staffno,skillno) VALUES(?,?)");
+						pstmt.setInt(1, staff.getNo());
+						pstmt.setInt(2, Integer.parseInt(skillNo[i]));
+						result2 = pstmt.executeUpdate();
+						//System.out.println("입력성공 ? "+result2);
+					}
+					if(result2 != 0){
+						conn.commit();
+					}
+				}
+			}
+		
+		}catch(Exception e){
+			try{conn.rollback();}catch(Exception ignore){};
+			e.printStackTrace();
+		}finally{
+			this.close(conn,pstmt,rs);
+			
+		}
+		return result2;
+	}
 	// no값으로 하나의 회원 조회
 	public Staff getStaffByNo(int no){
 		try{
@@ -71,7 +118,7 @@ public class StaffDao {
 					skillList.add(skill);
 					//System.out.println("뭐임"+staff);
 				}
-				System.out.println("스킬사이즈 : "+skillList.size());
+				//System.out.println("스킬사이즈 : "+skillList.size());
 				staff.setSkillList(skillList);
 				//System.out.println("뭐임"+staff);
 			}
