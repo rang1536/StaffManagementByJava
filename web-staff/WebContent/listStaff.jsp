@@ -9,7 +9,6 @@
 	<meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
 	<meta name="description" content="">
 	<meta name="author" content="">
-	
 	<title>Simple Sidebar - Start Bootstrap Template</title>
 	
 	<!-- Bootstrap Core CSS -->
