@@ -91,7 +91,20 @@
 	                </div>
                 </div>
             </div>
+            <div align = "center">
+            		<c:if test="${nowPage>1}">
+						<a href = "<c:url value='/listStaff?nowPage=${nowPage-1}'/>">
+						<span class="glyphicon glyphicon-hand-left" aria-hidden="true"></span>이전
+						</a>
+					</c:if>
+					<c:if test="${nowPage < lastPage}">
+						<a href = "<c:url value='/listStaff?nowPage=${nowPage+1}'/>">
+						<span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>다음
+						</a>
+					</c:if>
+			</div>
         </div>
+        
         <!-- /#page-content-wrapper -->
 
     </div>

@@ -30,9 +30,91 @@
 	crossorigin="anonymous">
 	</script>
 	<script>
-		$(document).on('click','#deleteBtn',function(){
-			$('#editForm').attr({action:"<c:url value='/deleteStaff'/>",method:"post"}).submit();
+	function numberCheck(num) { 
+		for (i=0; i<num.length; i++) { 
+		  var check = num.substr(i, 1); 
+		  if (check < "0" || check > "9") return false; 
+		} 
+		return true; 
+	}
+	$(document).ready(function(){
+		$(document).on('focus','#snf',function(){
+			$(document).on('blur','#snf',function(){
+				var birthDay = $('#snf').val().trim();
+				var mm = parseInt($('#snf').val().trim().substr(2,2));
+				console.log(dd);
+				var dd = parseInt($('#snf').val().trim().substr(4,2)); 
+				if(!numberCheck(birthDay)){
+					alert('주민번호는 숫자만 입력해주세요');
+					return;
+				}else if(birthDay.length != 6){
+					alert('주민번호 앞자리는 6자리로 입력하세요');
+					return;
+				}else if(mm >12 || mm < 1){
+					alert('올바른 월을 입력해주세요');
+					return ;
+				}else if(dd > 31 || dd == 0 ){
+					alert('올바른 날짜를 입력해주세요');
+					return ;
+				}
+			});
 		});
+	
+		$(document).on('click','#editBtn',function(){
+			if($('#name').val().trim() == ''){
+				alert('이름을 입력하세요');
+				return;
+			}else if($('#religion > option:selected').val() == '::종교::'){
+				alert('종교를 골라주세요');
+				return;
+			}else if($('input:radio[name="schoolNo"]:checked').length < 1){
+				alert('학력을 골라주세요');
+				return;
+			}else if($('input:checkbox[name="skillNo"]:checked').length < 1){
+				alert('1가지 이상의 기술을 골라주세요');
+				return;
+			}else if($('#graduateDay').val() == ""){
+				alert('졸업일을 입력해 주세요');
+				return;
+			}else if($('#snl').val().trim().length != 7){
+				alert('주민번호 뒷자리는 7자리로 입력하세요');
+				return;
+			}else if(!numberCheck($('#snl').val().trim())){
+				alert('주민번호는 숫자만 입력해주세요');
+				return;
+			}else{
+				$('#editForm').attr({action:"<c:url value='/editStaff'/>",method:"post"}).submit();
+			}
+		});
+		$(document).on('click','#deleteBtn',function(){
+			$('#deleteModel').modal()
+			var staffNo = $('#staffNo').val().trim();
+			console.log(staffNo);
+			$('#no').html(staffNo);
+			$('#staffNum').val(staffNo);
+		});
+		$(document).on('click','#delete',function(){
+			var birthDay = $('#birthDay').val().trim();
+			if(birthDay == ""){
+				alert('생년월일 6자리를 입력해주세요');
+				return ;
+			}else if(parseInt(birthDay.substr(2,2)) > 12 || parseInt(birthDay.substr(2,2)) == 0 ){
+				console.log(parseInt($('#birthDay').val().substr(2,2)));
+				alert('올바른 월을 입력해주세요');
+				return ;
+			}else if(parseInt(birthDay.substr(4,2)) > 31 || parseInt(birthDay.substr(4,2)) == 0 ){
+				console.log(parseInt($('#birthDay').val().substr(4,2)));
+				alert('올바른 일을 입력해주세요');
+				return ;
+			}else if(!numberCheck(birthDay)){
+				alert('주민번호는 숫자만 입력해주세요');
+				return;
+			}else{
+				$('#deleteForm').attr({action:"<c:url value='/deleteStaff'/>",method:"post"}).submit();
+			}
+		});
+	});
+		
 	</script>
 </head>
 <body>
@@ -64,11 +146,11 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1>STAFF 조회</h1>
-					<div>
+                        <center><h1>STAFF 수정</h1></center>
+					<div class="container">
 						<form action = "<c:url value='/editStaff'/>" method="post" id="editForm" >
-							<input type="hidden" name="no" value="${staff.no}" />
-							<table border="1">
+							<input type="hidden" name="no" id="staffNo" value="${staff.no}" readonly />
+							<table class="table table-bordered">
 								<tr>
 									<th>이름</th>
 									<th>
@@ -76,17 +158,17 @@
 									</th>
 									<th>주민번호</th>
 									<th>
-										<input type="text" name="snf" value="${snf}" />-<input type="password" name="snl" value="${snl}" />
+										<input type="text" name="snf" id="snf" value="${snf}" />-<input type="password" id="snl" name="snl" value="${snl}" />
 									</th>
 									<th>종교</th>
 									<th>
 										
-										<select name="religion" id = "rel">
+										<select name="religion" id = "religion">
 											<c:forEach  var="i" items="${religionList}">
 												<option value="${i.no}">${i.name}</option>
 											</c:forEach>
 											<script>
-												$('#rel').val('${staff.religionNo}').attr('selected','selected');
+												$('#religion').val('${staff.religionNo}').attr('selected','selected');
 											</script>
 										</select>
 										
@@ -117,17 +199,47 @@
 								<tr>
 									<td>졸업일</td>
 									<td colspan="5">
-										<input type="date" name="graduateDay" value="${staff.graduateDay}" />
+										<input type="date" id = "graduateDay" name="graduateDay" value="${staff.graduateDay}" />
 									</td>
 								</tr>
 								<tr>
 									<td  colspan = "6">
-										<input type="submit" value="수정" />
+										<input type="button" value="수정" id="editBtn" />
 										<input type="button" value="삭제" id="deleteBtn" />
 									</td>
 								</tr>
 							</table>
 						</form>
+						<div class="modal fade" id="deleteModel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+						  <div class="modal-dialog">
+						    <div class="modal-content">
+						      <div class="modal-header">
+						        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						        <h4 class="modal-title" id="exampleModalLabel">New message</h4>
+						      </div>
+						      <form id="deleteForm">
+							      <div class="modal-body">
+							       
+							          <div class="form-group">
+							            <label for="no" class="control-label">Staff No</label>
+							            <span id="no"></span>
+							            <input type="hidden" id="staffNum" name="staffNum" />
+							          </div>
+							          <div class="form-group">
+							            <label for="birthday" class="control-label">Birthday:</label>
+							            <input type="text" class="form-control" name ="birthDay" id="birthDay" placeholder="생년월일을 6자리를 입력하세요  예) 901013">
+							          </div>
+							       
+							      </div>
+							      <div class="modal-footer">
+							        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							        <button type="button" class="btn btn-primary" id="delete">삭제</button>
+							      </div>
+						      </form>
+						    </div>
+						    
+						  </div>
+						</div>
                     </div>
                 </div>
             </div>

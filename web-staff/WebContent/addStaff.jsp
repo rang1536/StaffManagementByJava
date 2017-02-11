@@ -24,6 +24,70 @@
 	    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
 	    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 	<![endif]-->
+	<script
+	src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+	integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc="
+	crossorigin="anonymous">
+	</script>
+	<script>
+		function numberCheck(num) { 
+			for (i=0; i<num.length; i++) { 
+			  var check = num.substr(i, 1); 
+			  if (check < "0" || check > "9") return false; 
+			} 
+			return true; 
+		}
+		$(document).ready(function(){
+			$(document).on('focus','#snf',function(){
+				$(document).on('blur','#snf',function(){
+					var birthDay = $('#snf').val().trim();
+					var mm = parseInt($('#snf').val().trim().substr(2,2));
+					console.log(dd);
+					var dd = parseInt($('#snf').val().trim().substr(4,2)); 
+					if(!numberCheck(birthDay)){
+						alert('주민번호는 숫자만 입력해주세요');
+						return;
+					}else if(birthDay.length != 6){
+						alert('주민번호 앞자리는 6자리로 입력하세요');
+						return;
+					}else if(mm >12 || mm < 1){
+						alert('올바른 월을 입력해주세요');
+						return ;
+					}else if(dd > 31 || dd == 0 ){
+						alert('올바른 날짜를 입력해주세요');
+						return ;
+					}
+				});
+			});
+		
+			$(document).on('click','#addBtn',function(){
+				if($('#name').val().trim() == ''){
+					alert('이름을 입력하세요');
+					return;
+				}else if($('#religion > option:selected').val() == '::종교::'){
+					alert('종교를 골라주세요');
+					return;
+				}else if($('input:radio[name="schoolNo"]:checked').length < 1){
+					alert('학력을 골라주세요');
+					return;
+				}else if($('input:checkbox[name="skillNo"]:checked').length < 1){
+					alert('1가지 이상의 기술을 골라주세요');
+					return;
+				}else if($('#graduateDay').val() == ""){
+					alert('졸업일을 입력해 주세요');
+					return;
+				}else if($('#snl').val().trim().length != 7){
+					alert('주민번호 뒷자리는 7자리로 입력하세요');
+					return;
+				}else if(!numberCheck($('#snl').val().trim())){
+					alert('주민번호는 숫자만 입력해주세요');
+					return;
+				}else{
+					$('#addForm').attr({action:"<c:url value='/addStaff'/>",method:"post"}).submit();
+				}
+			});
+		});
+	</script>
 </head>
 <body>
  <div id="wrapper">
@@ -54,10 +118,10 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1>STAFF 등록</h1>
-					<div>
-						<form action = "<c:url value='/addStaff'/>" method="post">
-							<table border="1">
+                        <center><h1>STAFF 등록</h1></center>
+					<div class="container">
+						<form action = "<c:url value='/addStaff'/>" method="post" id="addForm" >
+							<table class="table table-bordered" >
 								<tr>
 									<th>이름</th>
 									<th>
@@ -65,12 +129,13 @@
 									</th>
 									<th>주민번호</th>
 									<th>
-										<input type="text" name="snf" />-<input type="text" name="snl" />
+										<input type="text" name="snf" id="snf" />-<input type="text" name="snl" id="snl" />
 									</th>
 									<th>종교</th>
 									<th>
 										
-										<select name="religion">
+										<select name="religion" id="religion">
+											<option>::종교::</option>
 											<c:forEach  var="i" items="${religionList}">
 												<option value="${i.no}">${i.name}</option>
 										
@@ -97,16 +162,16 @@
 								<tr>
 									<td>졸업일</td>
 									<td colspan="5">
-										<input type="date" name="graduateDay" />
+										<input type="date" name="graduateDay" id="graduateDay" />
 									</td>
 								</tr>
 								<tr>
-									<center>
+								
 									<td  colspan = "6">
-										<input type="submit" value="등록" id="submit" />
+										<input type="button" value="등록" id="addBtn" />
 										<input type="reset" value="다시작성" />
 									</td>
-									</center>
+									
 								</tr>
 							</table>
 						

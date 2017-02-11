@@ -35,6 +35,61 @@ public class StaffDao {
 	List<Skill> skillList;
 	List<Staff> staffList;
 	
+	//staff 총 수 구하기
+	public int getStaffTotalCount(){
+		try{
+			conn=this.getConnection();
+			String sql = "SELECT COUNT(*) FROM staff";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			if(rs.next()){
+				rowCount = rs.getInt(1);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			System.out.println(e);
+		}finally{
+			this.close(conn,pstmt,rs );
+		}
+		return rowCount;
+	}
+	
+	//삭제처리
+	public int deleteStaff(int no){
+		try{
+			conn=this.getConnection();
+			conn.setAutoCommit(false);
+			
+			String sql = "DELETE FROM staff WHERE no = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, no);
+			rowCount = pstmt.executeUpdate();
+			if(rowCount != 0){
+				pstmt = conn.prepareStatement("SELECT * FROM staffskill WHERE staffno = ?");
+				pstmt.setInt(1, no);
+				rs = pstmt.executeQuery();
+				if(rs.next()){
+					pstmt = conn.prepareStatement("DELETE FROM staffskill WHERE staffno = ?");
+					pstmt.setInt(1, no);
+					rowCount = pstmt.executeUpdate();
+					if(rowCount != 0){
+						conn.commit();
+					}
+				}else{
+					conn.commit();
+				}
+			}
+	
+		}catch(Exception e){
+			try{conn.rollback();}catch(Exception ignore){};
+			e.printStackTrace();
+			
+		}finally{
+			this.close(conn,pstmt,rs );
+		}
+		return rowCount;
+	}
+	
 	//수정처리 (트랜잭션)
 	public int editStaff(Staff staff,String[] skillNo){
 		int result2 = 0;
@@ -53,13 +108,30 @@ public class StaffDao {
 			rowCount = pstmt.executeUpdate();
 			//System.out.println("수정성공 ? "+rowCount);
 			
-			// 수정 성공시에 기존의 스킬을 지우고 입력받은 값을 다시 입력해준다.
+			// 수정 성공시에 기존의 스킬을 지우고 입력받은 값을 다시 입력해준다. 기존에 스킬이 없었다면 삭제 없이 입력만 하고 스킬이 있엇으면 삭제후 입력처리한다.
 			if(rowCount != 0){
-				pstmt = conn.prepareStatement("DELETE FROM staffskill WHERE staffno=?");
+				pstmt = conn.prepareStatement("SELECT * FROM staffskill WHERE staffno = ?");
 				pstmt.setInt(1, staff.getNo());
-				int result1 = pstmt.executeUpdate();
-				//System.out.println("삭제성공 ? "+result1);
-				if(result1 != 0){
+				rs = pstmt.executeQuery();
+				
+				if(rs.next()){
+					pstmt = conn.prepareStatement("DELETE FROM staffskill WHERE staffno=?");
+					pstmt.setInt(1, staff.getNo());
+					int result1 = pstmt.executeUpdate();
+					//System.out.println("삭제성공 ? "+result1);
+					if(result1 != 0){
+						for(int i=0 ; i < skillNo.length ; i++){
+							pstmt = conn.prepareStatement("INSERT INTO staffSkill(staffno,skillno) VALUES(?,?)");
+							pstmt.setInt(1, staff.getNo());
+							pstmt.setInt(2, Integer.parseInt(skillNo[i]));
+							result2 = pstmt.executeUpdate();
+							//System.out.println("입력성공 ? "+result2);
+						}
+						if(result2 != 0){
+							conn.commit();
+						}
+					}
+				}else{
 					for(int i=0 ; i < skillNo.length ; i++){
 						pstmt = conn.prepareStatement("INSERT INTO staffSkill(staffno,skillno) VALUES(?,?)");
 						pstmt.setInt(1, staff.getNo());
@@ -172,7 +244,7 @@ public class StaffDao {
 	}
 	
 	//전체 직원조회 
-	public ArrayList<Staff> getAllStaff(){
+	public ArrayList<Staff> getAllStaff(int startRow, int pagePerRow){
 		//System.out.println("h2!");
 		ArrayList<Skill> skillList = null;
 		ArrayList<Staff> staffList = new ArrayList<Staff>();
@@ -182,8 +254,11 @@ public class StaffDao {
 					"FROM staff "+
 					"LEFT JOIN religion "+
 					"ON staff.religionno = religion.no "+
-					"LEFT JOIN school ON staff.schoolno = school.no";
+					"LEFT JOIN school ON staff.schoolno = school.no "+
+					"LIMIT ?,?";
 			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, startRow);
+			pstmt.setInt(2, pagePerRow);
 			rs = pstmt.executeQuery();
 			String sql2 = "SELECT skill.* FROM skill WHERE skill.no IN (SELECT skillno FROM staffskill WHERE staffno = ?)";
  			//System.out.println(rs.next());
@@ -245,11 +320,13 @@ public class StaffDao {
 			rs = pstmt.getGeneratedKeys();
 			if(rs.next()){
 				staffNo = rs.getInt(1);
-				for(int i=0 ; i < skillNo.length ; i++){
-					pstmt = conn.prepareStatement("insert into staffSkill(staffno,skillno) values(?,?)");
-					pstmt.setInt(1, staffNo);
-					pstmt.setInt(2, Integer.parseInt(skillNo[i]));
-					pstmt.executeUpdate();
+				if(skillNo != null){
+					for(int i=0 ; i < skillNo.length ; i++){
+						pstmt = conn.prepareStatement("insert into staffSkill(staffno,skillno) values(?,?)");
+						pstmt.setInt(1, staffNo);
+						pstmt.setInt(2, Integer.parseInt(skillNo[i]));
+						pstmt.executeUpdate();
+					}
 				}
 			}
 			conn.commit();

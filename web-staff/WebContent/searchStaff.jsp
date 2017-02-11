@@ -24,6 +24,38 @@
 	    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
 	    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 	<![endif]-->
+	<script
+	src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+	integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc="
+	crossorigin="anonymous">
+	</script>
+	<script>
+	$(document).ready(function(){
+		$(document).on('click','#searchBtn',function(){
+			if($('#name').val().trim() == ''){
+				alert('이름을 입력하세요');
+				return;
+			}else if($('#religion > option:selected').val() == '::종교::'){
+				alert('종교를 골라주세요');
+				return;
+			}else if($('input:radio[name="schoolNo"]:checked').length < 1){
+				alert('학력을 골라주세요');
+				return;
+			}else if($('input:checkbox[name="skillNo"]:checked').length < 1){
+				alert('1가지 이상의 기술을 골라주세요');
+				return;
+			}else if($('#gdStart').val() == ""){
+				alert('검색할 졸업시작일을 입력해 주세요');
+				return;
+			}else if($('#gdEnd').val() == ""){
+				alert('검색할 졸업종료일을 입력해 주세요');
+				return;
+			}else{
+				$('#searchForm').attr({action:"<c:url value='/searchStaff'/>",method:"post"}).submit();
+			}
+		});
+	});
+	</script>
 </head>
 <body>
  <div id="wrapper">
@@ -54,10 +86,10 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1>STAFF 조회</h1>
-					<div>
-						<form action = "<c:url value='/searchStaff'/>" method="post">
-							<table border="1">
+                        <center><h1>STAFF 조회</h1></center>
+					<div class="container">
+						<form action = "<c:url value='/searchStaff'/>" method="post" id="searchForm">
+							<table class="table table-bordered">
 								<tr>
 									<th>이름</th>
 									<th>
@@ -71,7 +103,7 @@
 									<th>종교</th>
 									<th>
 										
-										<select name="religion">
+										<select name="religion" id="religion">
 											<c:forEach  var="i" items="${religionList}">
 												<option value="${i.no}">${i.name}</option>
 										
@@ -97,12 +129,12 @@
 								<tr>
 									<td>졸업일</td>
 									<td colspan="5">
-										<input type="date" name="gdStart" />--<input type="date" name="gdEnd" />
+										<input type="date" name="gdStart" id="gdStart" />--<input type="date" name="gdEnd" id="gdEnd" />
 									</td>
 								</tr>
 								<tr>
 									<td  colspan = "6">
-										<input type="submit" value="등록" id="submit" />
+										<input type="button" value="등록" id="searchBtn" />
 										<input type="reset" value="다시작성" />
 									</td>
 								</tr>
